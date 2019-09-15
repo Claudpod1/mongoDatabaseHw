@@ -21,23 +21,7 @@ mongoose.connect("mongodb://localhost/mongoHeadlines", { useNewUrlParser: true }
 // ROutes 
 
 
-axios.get("https://www.vice.com/en_us").then(function (response) {
-    var $ = cheerio.load(response.data);
 
-    var results = [];
-
-    $(".heading-hover").each(function (i, element) {
-        var title = $(element).text();
-
-        var link = `www.vice.com${$(element).attr("href")}`;
-
-        results.push({
-            title: title,
-            link: link
-        });
-    });
-    console.log(results);
-})
 
 
 app.listen(PORT, function() {
