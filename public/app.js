@@ -1,3 +1,8 @@
+
+
+
+
+
 $(".scrape").on("click", function (req, res){
     $.get("/api/scrape")
 
