@@ -1,0 +1,8 @@
+<h1>Saved Articles</h1>
+        <ul>
+            {{#each article}}
+                {{> article-block}}
+            {{/each}}
+        </ul>
+    
+<button><a class="btn all" data-id="{{id}}" href="/articles">Back to Articles</a></button>

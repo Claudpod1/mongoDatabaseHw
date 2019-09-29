@@ -6,13 +6,22 @@ const cheerio = require("cheerio");
 
 // route for a homepage 
 
-router.get("/", function (req, res) {
-    res.render("index")
-})
+router.get("/", (req, res) => {
+    db.Article.find({})
+        .populate('note')
+        .then(function (dbArticle) {
+            let articleObject = { articles: dbArticle }
+            res.render("index", articleObject)
+        })
+        .catch(function (err) {
+            console.log(res.json(err))
+        });
 
+});
+ 
 // route for scraping vice.com
 
-router.get("/scrape", function (req, res) {
+router.get("/scrape", (req, res) => {
     axios.get("https://www.vice.com/en_us").then(function (response) {
         var $ = cheerio.load(response.data);
 
@@ -33,7 +42,7 @@ router.get("/scrape", function (req, res) {
 
             // create a new article 
 
-            db.Article.create(result)
+            db.Article.create(results)
                 .then(function (dbArticle) {
                     console.log(dbArticle);
                 })
@@ -41,19 +50,60 @@ router.get("/scrape", function (req, res) {
                     console.log(err);
                 });
         });
-        router.get("/articles", function (req, res) {
-            db.Article.find({})
-                .populate('note')
-                .then(function (dbArticle) {
-                    let articleObject = { articles: dbArticle }
-                    res.render("index", articleObject)
-                })
-                .catch(function (err) {
-                    console.log(res.json(err))
-                });
 
-            });
-        });
+    });
+});
+
+
+    router.get("/articles/:id",(req, res) => {
+        db.Article.findOne({_id: req.params.id})
+        // .populate("note")
+        .then(function(dbArticle) {
+            console.log(dbArticle[0])
+          let note = dbArticle.note
+          let article = dbArticle
+          let articleObject = {logo: article.title, title: note.title, body: note.body, id: note._id}
+          res.render('note', articleObject)
+        })
+        .catch(function (err) {
+        console.log(res.json(err))
+
+      });
+    });
+
+
+    //route to save an article 
+    router.get('/saved/:id',  (req, res) => {
+        db.Article.findByIdAndUpdate(req.params.id, {$set: {saved: true}}, {new: true})
+        .then( () => res.redirect('/'))
+        .catch(err => res.json(err));
+      });
+
+    
+
+
+    //route to grab all saved articles
+  router.get('/saved',(req, res) =>{
+    db.Article.find({saved: true})
+    .then(result => {
+      let articleObject = {article: result}
+      res.render('saved', articleObject);
     })
+    .catch(err => res.json(err))
+  });
 
-    module.exports = router; 
+//delete
+router.get('/note/delete/:id', (req, res) => {
+    db.Note.findByIdAndRemove(req.params.id)
+    .then(() => res.redirect('/'))
+    .catch(err => res.json(err))
+  });
+
+//   //route to delete article
+  router.get('/article/delete/:id', (req, res) => {
+    db.Article.findByIdAndRemove(req.params.id)
+    .then(() => res.redirect('/'))
+    .catch(err => res.json(err))
+  });
+
+module.exports = router;
